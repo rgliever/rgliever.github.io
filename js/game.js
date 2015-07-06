@@ -1,4 +1,3 @@
-// Ryan Gliever 2015
 // canvas
 var canvas = document.createElement("canvas");
 canvas.id = 'canvas'
@@ -26,7 +25,7 @@ shipImage.src = "images/spaceship.png";
 // the spaceship variables
 var spaceship = {
 	speed: 0.0,
-	topSpeed: 4.0,
+	topSpeed: 8.0,
 	rotation: 0,
 	x: 100,
 	y: 100
@@ -66,6 +65,38 @@ function checkBounds () {
 	}
 }
 
+// trail spot
+function TrailSpot (x, y, color, alpha) {
+	this.x = x;
+	this.y = y;
+	this.color = color;
+}
+
+TrailSpot.prototype.setColor = function(color) {
+	this.color = color;
+}
+
+TrailSpot.prototype.getColor = function() {
+	return this.color;
+}
+
+// keep track of trail spots locations, draw in render
+var trailSpots = [];
+function drawTrail() {
+	trailSpots.push(new TrailSpot(spaceship.x,spaceship.y,"rgba(0,0,0,1)")); 
+}
+
+var a = 1;
+function fadeTrail() {
+	for (spot in trailSpots) {
+		while (a > 0) {
+			//console.log(a);
+			a -= 0.05;
+			trailSpots[spot].globalAlpha = 0.2;
+		}
+	}
+}
+
 // Update game objects
 var update = function () {
 	// 0 -360 degree range
@@ -86,26 +117,30 @@ var update = function () {
 		spaceship.rotation += 5;
 	}
 	checkBounds();
+	if (spaceship.speed > 0) drawTrail();
+	//fadeTrail;
+	ctx.clearRect(0,0,canvas.width, canvas.height);
 };
 
+var q = 0;
 // Draw everything
 var render = function () {
-	if (bgReady) {
-		drawBackgroundRepeat(bgImage);
-	}
-	
 	if (shipReady) {
 		drawRotatedImage(shipImage, 
 			spaceship.x, 
 			spaceship.y, 
 			spaceship.rotation);
+		for (spot in trailSpots) {
+			ctx.fillStyle = trailSpots[spot].getColor();
+			ctx.fillRect(trailSpots[spot].x, trailSpots[spot].y, 1, 1);
+		}
 	}
 	
 	ctx.fillStyle = "rgb(0, 0, 0)";
 	ctx.font = "11px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Rotation: " + spaceship.rotation, 4, 4);
+	ctx.fillText("Rotation: " + spaceship.rotation + "°", 4, 4);
 	ctx.fillText("Speed: " + spaceship.speed, 4, 16);
 	ctx.fillText("X: " + spaceship.x, 4, 28);
 	ctx.fillText("Y: " + spaceship.y, 4, 40);
@@ -152,7 +187,6 @@ function drawRotatedImage(image, x, y, angle) {
 var main = function () {
 	update();
 	render();
-
 	// Request to do this again ASAP
 	requestAnimationFrame(main);
 };
@@ -161,5 +195,4 @@ var main = function () {
 var w = window;
 requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
-// Let's play this game!
 main();
