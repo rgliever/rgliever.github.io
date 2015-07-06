@@ -1,0 +1,35 @@
+
+#sidepanel {
+	position: fixed;
+	width: 300px;
+	height: 100%;
+	right: 0;
+	top: 0;
+	background: #eeeeee;
+	padding-left: 20px;
+}
+
+#trail_length {
+	margin-top: 50px;
+}
+
+.label {
+	font-family: Helvetica;
+	font-size: 11px;
+}
+
+.color_select {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+#color_box {
+	width: 20px;
+	height: 10px;
+	background-color: rgba(0,0,0, 1);
+}
+
+[type="range"] {
+
+}

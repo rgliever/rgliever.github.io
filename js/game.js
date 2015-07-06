@@ -2,17 +2,12 @@
 var canvas = document.createElement("canvas");
 canvas.id = 'canvas'
 var ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
+canvas.width = window.innerWidth - 300;
 canvas.height = window.innerHeight;
 document.body.appendChild(canvas);
 
-// background image
-var bgReady = false;
-var bgImage = new Image();
-bgImage.src = "images/game-background.png";
-bgImage.onload = function () {
-	bgReady = true;
-};
+// deg to radians
+var TO_RADIANS = Math.PI/180; 
 
 // spaceship image
 var shipReady = false;
@@ -31,16 +26,16 @@ var spaceship = {
 	y: 100
 };
 
+// key event listeners
 var keysDown = {};
-
 addEventListener("keydown", function (e) {
 	keysDown[e.keyCode] = true;
 }, false);
-
 addEventListener("keyup", function (e) {
 	delete keysDown[e.keyCode];
 }, false);
 
+// ACCELERATE / DECELERATE
 function accelerate(roto, acc) {
 	if (spaceship.speed < spaceship.topSpeed) {
 		spaceship.speed += acc;
@@ -48,13 +43,13 @@ function accelerate(roto, acc) {
 	spaceship.x += spaceship.speed*Math.sin(roto);
 	spaceship.y -= spaceship.speed*Math.cos(roto);
 }
-
 function decelerate(roto, acc) {
 	spaceship.speed -= acc;
 	spaceship.x += spaceship.speed*Math.sin(roto);
 	spaceship.y -= spaceship.speed*Math.cos(roto);
 }
 
+// reset spaceship coordinates when it goes off screen
 function checkBounds () {
 	switch(true) {
 		case (spaceship.x > canvas.width): spaceship.x = 0; break;
@@ -65,39 +60,65 @@ function checkBounds () {
 	}
 }
 
-// trail spot
+// trail spot prototype
 function TrailSpot (x, y, color, alpha) {
 	this.x = x;
 	this.y = y;
 	this.color = color;
 }
-
 TrailSpot.prototype.setColor = function(color) {
 	this.color = color;
 }
-
 TrailSpot.prototype.getColor = function() {
 	return this.color;
+}
+
+var redVal = 0;
+var greenVal = 0;
+var blueVal = 0;
+var trailColor = "rgba("+redVal+","+greenVal+","+blueVal+",1)";
+function adjustColors (value, rgb) {
+	switch (rgb) {
+		case "r_slide": redVal = value; break;
+		case "g_slide": greenVal = value; break;
+		case "b_slide": blueVal = value; break;
+		default: break;
+	}
+	trailColor = "rgba("+redVal+","+greenVal+","+blueVal+",1)";
+	document.getElementById("color_box").style.backgroundColor = trailColor;
 }
 
 // keep track of trail spots locations, draw in render
 var trailSpots = [];
 function drawTrail() {
-	trailSpots.push(new TrailSpot(spaceship.x,spaceship.y,"rgba(0,0,0,1)")); 
+	trailSpots.push(new TrailSpot(spaceship.x,spaceship.y,trailColor)
+	);
 }
 
-var a = 1;
+/*
 function fadeTrail() {
 	for (spot in trailSpots) {
+		var a = 1;
 		while (a > 0) {
 			//console.log(a);
 			a -= 0.05;
-			trailSpots[spot].globalAlpha = 0.2;
+			trailSpots[spot].setColor("rgba(0,0,0,"+a+")");
 		}
 	}
 }
+*/
 
-// Update game objects
+var maxTrailLength = 50;
+function setMaxTrailLength (len) {
+	maxTrailLength = len;
+}
+
+var trailWeight = 2;
+function setTrailWeight (wgt) {
+	trailWeight = wgt;
+}
+
+// UPDATE
 var update = function () {
 	// 0 -360 degree range
 	spaceship.rotation = spaceship.rotation%360;
@@ -106,8 +127,9 @@ var update = function () {
 	
 	if (38 in keysDown) { // Player holding up
 		accelerate (roto, acc);
-	} else if (!(38 in keysDown) && spaceship.speed > 0) {
+	} else if (!(38 in keysDown) && spaceship.speed >= 0) {
 		decelerate (roto, acc);
+		trailSpots.shift();
 	}
 	if (37 in keysDown) { // Player holding left
 		spaceship.rotation -= 5;
@@ -116,26 +138,33 @@ var update = function () {
 	if (39 in keysDown) { // Player holding right
 		spaceship.rotation += 5;
 	}
+	
 	checkBounds();
 	if (spaceship.speed > 0) drawTrail();
-	//fadeTrail;
-	ctx.clearRect(0,0,canvas.width, canvas.height);
+	else if (trailSpots.length > 0) trailSpots.shift();
+	if (trailSpots.length > maxTrailLength) trailSpots.shift();
+	ctx.clearRect(0,0,canvas.width,canvas.height);
 };
 
-var q = 0;
-// Draw everything
+// RENDER
 var render = function () {
 	if (shipReady) {
 		drawRotatedImage(shipImage, 
 			spaceship.x, 
 			spaceship.y, 
 			spaceship.rotation);
+		var w = trailWeight;
 		for (spot in trailSpots) {
-			ctx.fillStyle = trailSpots[spot].getColor();
-			ctx.fillRect(trailSpots[spot].x, trailSpots[spot].y, 1, 1);
+			var op = spot/100;
+			var col = "rgba("+redVal+","+greenVal+","+blueVal+","+op+")";
+			ctx.fillStyle = col;
+			ctx.fillRect(trailSpots[spot].x, trailSpots[spot].y, w, w);
 		}
 	}
-	
+	writeInfo();
+};
+
+function writeInfo () {
 	ctx.fillStyle = "rgb(0, 0, 0)";
 	ctx.font = "11px Helvetica";
 	ctx.textAlign = "left";
@@ -144,24 +173,9 @@ var render = function () {
 	ctx.fillText("Speed: " + spaceship.speed, 4, 16);
 	ctx.fillText("X: " + spaceship.x, 4, 28);
 	ctx.fillText("Y: " + spaceship.y, 4, 40);
-};
-
-// repeat background image
-function drawBackgroundRepeat(image) {
-	var x = 0;
-	var y = 0;
-	while (x < canvas.width) {
-		while (y < canvas.height) {
-			ctx.drawImage(image, x, y);
-			y += image.height;
-		}
-		y = 0;
-		ctx.drawImage(image, x, y);
-		x += image.width;
-	}
 }
 
-var TO_RADIANS = Math.PI/180; 
+
 function drawRotatedImage(image, x, y, angle) { 
  
 	// save the current co-ordinate system 
@@ -183,11 +197,12 @@ function drawRotatedImage(image, x, y, angle) {
 	ctx.restore(); 
 }
 
-// The main game loop
+//
+// ~ /\/\ /-\ \ /\/ ~ //
+//
 var main = function () {
 	update();
 	render();
-	// Request to do this again ASAP
 	requestAnimationFrame(main);
 };
 

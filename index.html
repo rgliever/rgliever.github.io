@@ -2,12 +2,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>simple game</title>
-	
+	<title>spaceship</title>
+	<link rel="stylesheet" href="css/game.css" />
 </head>
 
 <body style="overflow: hidden">
 	<script src="js/game.js"></script>
+	<div id="sidepanel">
+		<div id="trail_length">
+			<p class="label">Trail Length</p>
+			<select onchange="setMaxTrailLength(this.value)">
+				<option value="50">short</option>
+				<option value="150">medium</option>
+				<option value="300">long</option>
+				<option value="20000">permanent</option>
+			</select>
+		</div>
+		<div id="trail_weight">
+			<p class="label">Trail Weight</p>
+			<input onchange="setTrailWeight(this.value)" type="number" name="wgt" min="0" max="6" value="2">
+		</div>
+		<div id="trail_color">
+			<p class="label">Trail Color</p>
+			<div id="color_box"></div>
+			<div class="color_select">
+				<label class="label">RED</label>
+				<input onchange="adjustColors(this.value, this.name)" type="range" name="r_slide" min="0" max="255" value="0">
+			</div>
+			<div class="color_select">
+				<label class="label">GREEN</label>
+				<input onchange="adjustColors(this.value, this.name)" type="range" name="g_slide" min="0" max="255" value="0">
+			</div>
+			<div class="color_select">
+				<label class="label">BLUE</label>
+				<input onchange="adjustColors(this.value, this.name)" type="range" name="b_slide" min="0" max="255" value="0">
+			</div>
+		</div>
+
+	</div>
 </body>
 
 </html>
+
