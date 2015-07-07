@@ -1,3 +1,5 @@
+// Ryan Gliever 2015
+
 // canvas
 var canvas = document.createElement("canvas");
 canvas.id = 'canvas'
@@ -19,6 +21,8 @@ shipImage.src = "images/spaceship.png";
 
 function changeShip (path) {
 	shipImage.src = path;
+	// unfocus the select box
+	document.getElementById("ship_select").blur();
 }
 
 // the spaceship variables
@@ -85,9 +89,18 @@ var blueVal = 0;
 var trailColor = "rgba("+redVal+","+greenVal+","+blueVal+",1)";
 function adjustColors (value, rgb) {
 	switch (rgb) {
-		case "r_slide": redVal = value; break;
-		case "g_slide": greenVal = value; break;
-		case "b_slide": blueVal = value; break;
+		case "r_slide": 
+			redVal = value;
+			document.getElementById("r_slide").blur();
+			break;
+		case "g_slide":
+			greenVal = value;
+			document.getElementById("g_slide").blur();
+			break;
+		case "b_slide": 
+			blueVal = value;
+			document.getElementById("b_slide").blur();
+			break;
 		default: break;
 	}
 	trailColor = "rgba("+redVal+","+greenVal+","+blueVal+",1)";
@@ -107,31 +120,26 @@ function rainbowMode (on) {
 // keep track of trail spots locations, draw in render
 var trailSpots = [];
 function drawTrail() {
-	trailSpots.push(new TrailSpot(spaceship.x,spaceship.y,trailColor)
-	);
+	trailSpots.push(new TrailSpot(spaceship.x,spaceship.y,trailColor));
 }
-
-/*
-function fadeTrail() {
-	for (spot in trailSpots) {
-		var a = 1;
-		while (a > 0) {
-			//console.log(a);
-			a -= 0.05;
-			trailSpots[spot].setColor("rgba(0,0,0,"+a+")");
-		}
-	}
-}
-*/
 
 var maxTrailLength = 50;
 function setMaxTrailLength (len) {
 	maxTrailLength = len;
+	document.getElementById("trail_length").blur();
 }
 
 var trailWeight = 2;
 function setTrailWeight (wgt) {
+	if (wgt > 6) {
+		wgt = 6;
+		document.getElementById("wgt").value = 6;
+	} else if (wgt < 0) {
+		wgt = 0;
+		document.getElementById("wgt").value = 0;
+	}
 	trailWeight = wgt;
+	document.getElementById("wgt").blur();
 }
 
 // UPDATE
@@ -171,17 +179,26 @@ var render = function () {
 			spaceship.x, 
 			spaceship.y, 
 			spaceship.rotation);
-		var w = trailWeight;
-		for (spot in trailSpots) {
-			var op = spot/100;
-			var colorVals = trailSpots[spot].getColor();
-			var col = "rgba("+colorVals[0]+","+colorVals[1]+","+colorVals[2]+","+op+")";
-			ctx.fillStyle = col;
-			ctx.fillRect(trailSpots[spot].x, trailSpots[spot].y, w, w);
-		}
+		fadeTrail();
 	}
 	writeInfo();
 };
+
+function fadeTrail() {
+	var w = trailWeight;
+	for (spot in trailSpots) {
+		var op = spot/100;
+		var rad = w;
+		var colorVals = trailSpots[spot].getColor();
+		var col = "rgba("+colorVals[0]+","+colorVals[1]+","+colorVals[2]+","+op+")";
+		ctx.beginPath();
+		ctx.fillStyle = col;
+		//ctx.fillRect(trailSpots[spot].x, trailSpots[spot].y, w, w);
+		ctx.arc(trailSpots[spot].x, trailSpots[spot].y, rad, 0, 2*Math.PI);
+		//ctx.stroke();
+		ctx.fill();
+	}
+}
 
 function writeInfo () {
 	ctx.fillStyle = "rgb(0, 0, 0)";
