@@ -148,6 +148,16 @@ function setTrailWeight (wgt) {
 	document.getElementById("wgt").blur();
 }
 
+var begun = false;
+function ctrls(a) {
+	if (!a) {
+		ctx.fillStyle = "rgb(200, 0, 0)";
+		ctx.font = "11px Helvetica";
+		ctx.textAlign = "center";
+		ctx.fillText("Use the arrow keys to fly!", canvas.width/2, canvas.height/2);
+	}
+}
+
 // UPDATE
 var update = function () {
 	// 0 -360 degree range
@@ -157,6 +167,7 @@ var update = function () {
 	
 	if (38 in keysDown) { // Player holding up
 		accelerate (roto, acc);
+		begun=true;
 	} else if (!(38 in keysDown) && spaceship.speed >= 0) {
 		decelerate (roto, acc);
 		trailSpots.shift();
@@ -188,6 +199,8 @@ var render = function () {
 		fadeTrail();
 	}
 	writeInfo();
+	// display controls in beginning
+	ctrls(begun);
 };
 
 function fadeTrail() {
