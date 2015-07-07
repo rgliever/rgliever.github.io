@@ -9,6 +9,14 @@
 <body style="overflow: hidden">
 	<script src="js/game.js"></script>
 	<div id="sidepanel">
+		<div id="ship_select">
+			<p class="label">Spaceship</p>
+			<select onchange="changeShip(this.value)">
+				<option value="images/spaceship.png">Space Racer</option>
+				<option value="images/luminati.png">Luminati</option>
+				<option value="images/xwing.png">X-wing</option>
+			</select>
+		</div>
 		<div id="trail_length">
 			<p class="label">Trail Length</p>
 			<select onchange="setMaxTrailLength(this.value)">
@@ -37,6 +45,9 @@
 				<label class="label">BLUE</label>
 				<input onchange="adjustColors(this.value, this.name)" type="range" name="b_slide" min="0" max="255" value="0">
 			</div>
+		</div>
+		<div id="rainbow">
+			<p class="label"><input onchange="rainbowMode(this.checked)" type="checkbox" name="rainbowMode">Rainbow mode</p>
 		</div>
 
 	</div>

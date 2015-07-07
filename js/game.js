@@ -17,6 +17,10 @@ shipImage.onload = function () {
 };
 shipImage.src = "images/spaceship.png";
 
+function changeShip (path) {
+	shipImage.src = path;
+}
+
 // the spaceship variables
 var spaceship = {
 	speed: 0.0,
@@ -61,7 +65,7 @@ function checkBounds () {
 }
 
 // trail spot prototype
-function TrailSpot (x, y, color, alpha) {
+function TrailSpot (x, y, color) {
 	this.x = x;
 	this.y = y;
 	this.color = color;
@@ -70,7 +74,9 @@ TrailSpot.prototype.setColor = function(color) {
 	this.color = color;
 }
 TrailSpot.prototype.getColor = function() {
-	return this.color;
+	var colorString = this.color;
+	var valueArray = colorString.substring(colorString.indexOf('(') + 1, colorString.indexOf(')')).split(',');
+	return valueArray;
 }
 
 var redVal = 0;
@@ -86,6 +92,16 @@ function adjustColors (value, rgb) {
 	}
 	trailColor = "rgba("+redVal+","+greenVal+","+blueVal+",1)";
 	document.getElementById("color_box").style.backgroundColor = trailColor;
+}
+
+var rainbow = false;
+function rainbowMode (on) {
+	if (on) rainbow = true;
+	else rainbow = false;
+	redVal = Math.floor(Math.random() * 255);
+	greenVal = Math.floor(Math.random() *255);
+	blueVal = Math.floor(Math.random() *255);
+	trailColor = "rgba("+redVal+","+greenVal+","+blueVal+",1)";
 }
 
 // keep track of trail spots locations, draw in render
@@ -139,6 +155,8 @@ var update = function () {
 		spaceship.rotation += 5;
 	}
 	
+	if (rainbow) rainbowMode (true);
+	
 	checkBounds();
 	if (spaceship.speed > 0) drawTrail();
 	else if (trailSpots.length > 0) trailSpots.shift();
@@ -156,7 +174,8 @@ var render = function () {
 		var w = trailWeight;
 		for (spot in trailSpots) {
 			var op = spot/100;
-			var col = "rgba("+redVal+","+greenVal+","+blueVal+","+op+")";
+			var colorVals = trailSpots[spot].getColor();
+			var col = "rgba("+colorVals[0]+","+colorVals[1]+","+colorVals[2]+","+op+")";
 			ctx.fillStyle = col;
 			ctx.fillRect(trailSpots[spot].x, trailSpots[spot].y, w, w);
 		}
