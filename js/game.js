@@ -8,6 +8,12 @@ canvas.width = window.innerWidth - 300;
 canvas.height = window.innerHeight;
 document.body.appendChild(canvas);
 
+// rescale canvas on window resize
+window.onresize = function() {
+	canvas.width = window.innerWidth - 300;
+	canvas.height = window.innerHeight;
+};
+
 // deg to radians
 var TO_RADIANS = Math.PI/180; 
 
