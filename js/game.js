@@ -125,8 +125,54 @@ function rainbowMode (on) {
 
 // keep track of trail spots locations, draw in render
 var trailSpots = [];
-function drawTrail() {
+function addToTrail() {
 	trailSpots.push(new TrailSpot(spaceship.x,spaceship.y,trailColor));
+}
+
+// draw each trail spot with appropriate opacities
+function drawTrail() {
+	var w = trailWeight;
+	for (spot in trailSpots) {
+		var op = spot/100; // sets the opacity based on spot index in trailSpots
+		var rad = w;
+		var colorVals = trailSpots[spot].getColor();
+		var col = "rgba("+colorVals[0]+","+colorVals[1]+","+colorVals[2]+","+op+")";
+		ctx.beginPath();
+		ctx.fillStyle = col;
+		ctx.arc(trailSpots[spot].x, trailSpots[spot].y, rad, 0, 2*Math.PI);
+		ctx.fill();
+	}
+}
+
+function writeInfo () {
+	ctx.fillStyle = "rgb(0, 0, 0)";
+	ctx.font = "11px Helvetica";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.fillText("Rotation: " + spaceship.rotation + "°", 4, 4);
+	ctx.fillText("Speed: " + spaceship.speed, 4, 16);
+	ctx.fillText("X: " + spaceship.x, 4, 28);
+	ctx.fillText("Y: " + spaceship.y, 4, 40);
+}
+
+function drawRotatedImage(image, x, y, angle) { 
+	// save the current co-ordinate system 
+	// before we screw with it
+	ctx.save(); 
+ 
+	// move to the middle of where we want to draw our image
+	ctx.translate(x, y);
+ 
+	// rotate around that point, converting our 
+	// angle from degrees to radians 
+	ctx.rotate(angle * TO_RADIANS);
+ 
+	// draw it up and to the left by half the width
+	// and height of the image 
+	ctx.drawImage(image, -(image.width/2), -(image.height/2));
+ 
+	// and restore the co-ords to how they were when we began
+	ctx.restore(); 
 }
 
 var maxTrailLength = 50;
@@ -183,9 +229,10 @@ var update = function () {
 	if (rainbow) rainbowMode (true);
 	
 	checkBounds();
-	if (spaceship.speed > 0) drawTrail();
-	else if (trailSpots.length > 0) trailSpots.shift();
-	if (trailSpots.length > maxTrailLength) trailSpots.shift();
+	if (spaceship.speed > 0) addToTrail(); // adds a trail spot to the trail (at ship location)
+	else if (trailSpots.length > 0) trailSpots.shift(); 		// these shifts along with the
+	if (trailSpots.length > maxTrailLength) trailSpots.shift(); // set spot opacity in drawTrail()
+	                                                            // cause the "fading" of the trail
 	ctx.clearRect(0,0,canvas.width,canvas.height);
 };
 
@@ -196,61 +243,12 @@ var render = function () {
 			spaceship.x, 
 			spaceship.y, 
 			spaceship.rotation);
-		fadeTrail();
+		drawTrail();
 	}
 	writeInfo();
 	// display controls in beginning
 	ctrls(begun);
 };
-
-function fadeTrail() {
-	var w = trailWeight;
-	for (spot in trailSpots) {
-		var op = spot/100;
-		var rad = w;
-		var colorVals = trailSpots[spot].getColor();
-		var col = "rgba("+colorVals[0]+","+colorVals[1]+","+colorVals[2]+","+op+")";
-		ctx.beginPath();
-		ctx.fillStyle = col;
-		//ctx.fillRect(trailSpots[spot].x, trailSpots[spot].y, w, w);
-		ctx.arc(trailSpots[spot].x, trailSpots[spot].y, rad, 0, 2*Math.PI);
-		//ctx.stroke();
-		ctx.fill();
-	}
-}
-
-function writeInfo () {
-	ctx.fillStyle = "rgb(0, 0, 0)";
-	ctx.font = "11px Helvetica";
-	ctx.textAlign = "left";
-	ctx.textBaseline = "top";
-	ctx.fillText("Rotation: " + spaceship.rotation + "°", 4, 4);
-	ctx.fillText("Speed: " + spaceship.speed, 4, 16);
-	ctx.fillText("X: " + spaceship.x, 4, 28);
-	ctx.fillText("Y: " + spaceship.y, 4, 40);
-}
-
-
-function drawRotatedImage(image, x, y, angle) { 
- 
-	// save the current co-ordinate system 
-	// before we screw with it
-	ctx.save(); 
- 
-	// move to the middle of where we want to draw our image
-	ctx.translate(x, y);
- 
-	// rotate around that point, converting our 
-	// angle from degrees to radians 
-	ctx.rotate(angle * TO_RADIANS);
- 
-	// draw it up and to the left by half the width
-	// and height of the image 
-	ctx.drawImage(image, -(image.width/2), -(image.height/2));
- 
-	// and restore the co-ords to how they were when we began
-	ctx.restore(); 
-}
 
 //
 // ~ /\/\ /-\ \ /\/ ~ //
